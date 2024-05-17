@@ -25,11 +25,9 @@ void Spline::render(Canvas *canvas)
         points[i] = {screen_point.x, screen_point.y}; // SDL_Point and Vector2 are literarly the same thing
     }
 
+    // skip zero length lines
     if (point_count <= 1)
-    {
-        printf("skipping zero length\n");
         return;
-    }
 
     // IMPORTANT : construction of line mesh is buggy AF, rewrite it in the future (or leave it as is and never touch it again)
     // i will probably rewrite it in the future to handle sharp corners and smoothing in zoom ( probably shaders )

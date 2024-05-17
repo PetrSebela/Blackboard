@@ -74,6 +74,14 @@ ImGuiIO &InitImGui()
     ImGui::StyleColorsDark();
     ImGui_ImplSDL2_InitForSDLRenderer(window, renderer);
     ImGui_ImplSDLRenderer2_Init(renderer);
+
+    imgui_io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;
+    imgui_io.ConfigFlags |= ImGuiConfigFlags_ViewportsEnable;
+
+    // Enable docking
+    imgui_io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;
+
+
     return imgui_io;
 }
 
@@ -95,6 +103,16 @@ void HandleInputs(ImGuiIO &imgui_io)
         case SDL_KEYDOWN:
             if (event.key.keysym.sym == SDLK_ESCAPE)
                 app_active = false;
+
+            else if (event.key.keysym.sym == SDLK_z && event.key.keysym.mod & KMOD_LCTRL)
+            {
+                printf("Undo\n");
+                if (canvas_objects.size() > 0)
+                {
+                    canvas_objects.pop_back();
+                }   
+            }
+            
             break;
 
         case SDL_MOUSEBUTTONDOWN:
@@ -114,15 +132,9 @@ void HandleInputs(ImGuiIO &imgui_io)
             break;
 
         case SDL_MOUSEBUTTONUP:
-            // if (event.button.button == 1)
-            // {
-            //     if (canvas_objects.size() == 0)
-            //         continue;
-
-            //     Spline *s = (Spline *)&canvas_objects[canvas_objects.size() - 1];
-            //     int points = s->points.size();
-            //     fprintf(stdout, "segments %d\n", points);
-            // }
+            // if (canvas_objects[canvas_objects.size()-1].points.size() <= 1)
+                // canvas_objects.pop_back();
+            
             break;
 
         case SDL_MOUSEWHEEL:
@@ -154,20 +166,15 @@ int main(int argc, char *argv[])
     DenormalizeRGBA(brush_color_input, brush_color);
     DenormalizeRGBA(canvas_color_input, canvas_color);
 
-    // canvas_objects.push_back(Spline());
-    // for (int i = -5; i < 5; i++)
-    //     canvas_objects[0].addPoint(Vector2(1920 / 2 + i * 50, 1080 / 2));
-
     while (app_active)
     {
         // Events handeling
         int mouse_x, mouse_y;
         int buttons = SDL_GetMouseState(&mouse_x, &mouse_y);
-        mouse_position = Vector2(mouse_x, mouse_y);
+        mouse_position = Vector2(mouse_x, mouse_y);        
 
         HandleInputs(imgui_io);
 
-    
         // canvas panning
         if (buttons == 2 && !imgui_io.WantCaptureMouse)
         {
@@ -175,6 +182,7 @@ int main(int argc, char *argv[])
             pan_start = Vector2(mouse_x, mouse_y);
         }
 
+        // draw line
         else if (buttons == 1 && !imgui_io.WantCaptureMouse)
         {
             Vector2 point(mouse_x, mouse_y);
@@ -186,24 +194,32 @@ int main(int argc, char *argv[])
         ImGui_ImplSDLRenderer2_NewFrame();
         ImGui_ImplSDL2_NewFrame();
 
-
         ImGui::NewFrame();  
+
+        // main menu
         if(ImGui::BeginMainMenuBar())
         {
-            ImGui::Text("this is main menu");
+            if(ImGui::BeginMenu("File"))
+            {
+                ImGui::Text("this is main menu");
+                if (ImGui::Button("Open file"))
+                {
+                    // probably only works for linux, will port to windows later
+                    popen("zenity --file-selection","r");
+                }
+                ImGui::EndMenu();
+            }
             ImGui::EndMainMenuBar();
         }
 
         ImGui::Begin("Controls");
-        if(ImGui::ColorEdit4("Brush color", brush_color_input))
+        if(ImGui::ColorEdit3("Brush color", brush_color_input))
             DenormalizeRGBA(brush_color_input, brush_color);
 
         if(ImGui::SliderFloat("Canvas scale", &canvas.scale, 0.1, 2))
             canvas.offset += Vector2(screen_w, screen_h) / 2 - canvas.ScreenToWorld(Vector2(screen_w, screen_h) / 2);
         
-        ImGui::Text("Canvas offset: x = %f, y = %f", canvas.offset.x, canvas.offset.y);
-        
-        if(ImGui::ColorEdit4("Background color", canvas_color_input))
+        if(ImGui::ColorEdit3("Background color", canvas_color_input))
             DenormalizeRGBA(canvas_color_input, canvas_color);
 
         ImGui::SliderFloat("Line thickness", &line_thickness, 0.001, 100);
@@ -227,6 +243,7 @@ int main(int argc, char *argv[])
         // push to screen
         SDL_RenderPresent(renderer);
 
+        // delay to cap framerate to 60FPS ( add dynamic later )
         SDL_Delay(1000 / 60);
     }
 
