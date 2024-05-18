@@ -7,7 +7,8 @@
 enum ToolType {
     Brush,
     Select,
-    TOOL_COUNT = 2
+    Eraser,
+    TOOL_COUNT = 3
 };
 
 std::string ToolTypeToString(ToolType toolType);

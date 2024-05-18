@@ -4,13 +4,13 @@
 #include "canvas.hpp"
 #include "utils.hpp"
 
-void Spline::addPoint(Vector2 point)
+void Spline::AddPoint(Vector2 point)
 {
     if (this->points.size() == 0 || this->points[this->points.size() - 1] != point)
         this->points.push_back(point);
 }
 
-void Spline::render(Canvas *canvas)
+void Spline::Render(Canvas *canvas)
 {
     int point_count = this->points.size();
     SDL_FPoint points[point_count];
@@ -80,7 +80,7 @@ void Spline::render(Canvas *canvas)
     SDL_RenderGeometry(canvas->renderer, nullptr, vertices.data(), vertices.size(), triangles.data(), triangles.size());
 }
 
-void Spline::setColor(int *colors_rgba)
+void Spline::SetColor(int *colors_rgba)
 {
     for (size_t i = 0; i < 4; i++)
         this->color[i] = std::clamp((int)(colors_rgba[i]), 0, 255);

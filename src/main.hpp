@@ -15,11 +15,9 @@ ImGuiIO &InitImGui();
 // quit
 void QuitApp();
 
-void SelectTool(int toolIndex);
-
 void HandleInputs();
 
-void BuildGui(int screen_w, int screen_h);
+void BuildGui();
 
 int main(int argc, char *argv[]);
 

@@ -17,3 +17,9 @@ Vector2 Canvas::ScreenToWorld(Vector2 screen)
 {
     return (screen / this->scale) + this->offset;
 }
+
+void Canvas::Render()
+{
+    for (Spline s : this->splines)
+        s.Render(this);
+}

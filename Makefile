@@ -13,13 +13,13 @@ IMGUI_FILES := $(wildcard $(IMGUI_PATH)/*.cpp)
 IMGUI_OBJ_FILES := $(patsubst $(IMGUI_PATH)/%.cpp, $(BUILD_DIR)/imgui/%.o, $(IMGUI_FILES))
 
 default: $(OBJ_FILES) imgui
-	g++ -o blackboard $(SRC_FILES) $(IMGUI_OBJ_FILES) $(INCLUDES) $(LIBS) -Wall
+	clang++ -o blackboard $(SRC_FILES) $(IMGUI_OBJ_FILES) $(INCLUDES) $(LIBS) -Wall
 
 imgui: $(IMGUI_OBJ_FILES)
 	echo "imgui build"
 
 $(BUILD_DIR)/imgui/%.o: $(IMGUI_PATH)/%.cpp
-	g++ $(CPPFLAGS) $(CXXFLAGS) -c -o $@ $< $(INCLUDES) $(LIBS) -Wall
+	clang++ $(CPPFLAGS) $(CXXFLAGS) -c -o $@ $< $(INCLUDES) $(LIBS) -Wall
 
 run: default
 	./blackboard
