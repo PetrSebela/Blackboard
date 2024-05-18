@@ -52,7 +52,7 @@ int screen_w, screen_h;
 void Init()
 {
     InitSDL();
-    imgui_io = &InitImGui();
+    InitImGui();
 
     SDL_GetMouseState(&last_mouse_x, &last_mouse_y);
     SDL_GetRendererOutputSize(renderer, &screen_w, &screen_h);
@@ -87,17 +87,14 @@ void InitSDL()
     renderer = SDL_CreateRenderer(window, -1, render_flags);
 }
 
-ImGuiIO &InitImGui()
+void InitImGui()
 {
     IMGUI_CHECKVERSION();
     ImGui::CreateContext();
-    ImGuiIO &imgui_io = ImGui::GetIO();
-    (void)imgui_io;
+    imgui_io = &ImGui::GetIO();
     ImGui::StyleColorsDark();
     ImGui_ImplSDL2_InitForSDLRenderer(window, renderer);
     ImGui_ImplSDLRenderer2_Init(renderer);
-
-    return imgui_io;
 }
 
 void QuitApp()
@@ -136,7 +133,10 @@ void BuildGui()
 
     ImGui::Begin("Controls");
     if (ImGui::ColorEdit3("Brush color", brush_color_input))
+    {
         DenormalizeRGBA(brush_color_input, brush_color);
+        tool_manager.brush_color = ArrayToColor(brush_color);
+    }
 
     if (ImGui::SliderFloat("Canvas scale", &canvas.scale, min_canvas_scale, max_canvas_scale))
         canvas.offset += Vector2(screen_w, screen_h) / 2 - canvas.ScreenToWorld(Vector2(screen_w, screen_h) / 2);
@@ -144,7 +144,7 @@ void BuildGui()
     if (ImGui::ColorEdit3("Background color", canvas_color_input))
         DenormalizeRGBA(canvas_color_input, canvas_color);
 
-    ImGui::SliderFloat("Line thickness", &line_thickness, 0.1, 25); 
+    ImGui::SliderFloat("Line thickness", &tool_manager.brush_size, 0.1, 25); 
 
     // Tool selection
     bool *toolbox_states = tool_manager.GetToolboxStates();

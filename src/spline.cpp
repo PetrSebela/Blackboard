@@ -34,7 +34,7 @@ void Spline::Render(Canvas *canvas)
 
     Vector2 origin = this->points[0];
     Vector2 next = this->points[1];
-    SDL_Color line_color = ArrayToColour(this->color);
+    SDL_Color line_color = this->color;
     float thickness = this->thickness;
     std::vector<int> triangles;
     int vertex_count = 4;
@@ -82,6 +82,11 @@ void Spline::Render(Canvas *canvas)
 
 void Spline::SetColor(int *colors_rgba)
 {
-    for (size_t i = 0; i < 4; i++)
-        this->color[i] = std::clamp((int)(colors_rgba[i]), 0, 255);
+    SDL_Color color = {
+        (Uint8)std::clamp((int)(colors_rgba[0]), 0, 255),
+        (Uint8)std::clamp((int)(colors_rgba[1]), 0, 255),
+        (Uint8)std::clamp((int)(colors_rgba[2]), 0, 255),
+        (Uint8)std::clamp((int)(colors_rgba[3]), 0, 255),
+    };
+    this->color = color;
 }

@@ -13,7 +13,7 @@ class Spline
 {
 public:
     // current brush color
-    int color[4] = {255, 255, 255, 255};
+    SDL_Color color = {255,255,255,255};
     float thickness = 1;
     bool finished = false;
 

@@ -4,15 +4,12 @@
 #include "../include/imgui/imgui_impl_sdl2.h"
 #include "../include/imgui/imgui_impl_sdlrenderer2.h"
 
-
-// init methods
 void Init();
 
 void InitSDL();
 
-ImGuiIO &InitImGui();
+void InitImGui();
 
-// quit
 void QuitApp();
 
 void HandleInputs();

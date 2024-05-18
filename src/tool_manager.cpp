@@ -36,7 +36,6 @@ void ToolManager::ExecuteTool(SDL_Event event)
     }
 };
 
-
 // --- Brush tool ---
 
 void ToolManager::BrushTool(SDL_Event event)
@@ -53,6 +52,8 @@ void ToolManager::BrushTool(SDL_Event event)
             break;        
         printf("Starting new spline\n");        
         this->canvas->splines.push_back(Spline());
+        this->canvas->splines.back().color = brush_color;
+        this->canvas->splines.back().thickness = brush_size;
         break;
 
     case SDL_MOUSEBUTTONUP:

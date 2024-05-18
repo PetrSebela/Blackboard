@@ -8,7 +8,7 @@ void DenormalizeRGBA(float *RGBA, int *output)
         output[i] = std::clamp((int)(RGBA[i] * 255), 0, 255);
 }
 
-SDL_Color ArrayToColour(int *RGBA)
+SDL_Color ArrayToColor(int *RGBA)
 {
     SDL_Color color{
         (Uint8)RGBA[0],

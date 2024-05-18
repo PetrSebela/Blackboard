@@ -12,11 +12,13 @@ private:
     bool toolbox_states[ToolType::TOOL_COUNT] = {false};
     ToolType active_tool;
     Canvas *canvas;
-
     void BrushTool(SDL_Event event);
     bool CannotDraw(int mouse_buttons);
 
 public:
+    float brush_size = 1;
+    SDL_Color brush_color = {255, 255, 255, 255};
+
     ToolManager(Canvas *canvas);
     ToolManager();
     ~ToolManager();
