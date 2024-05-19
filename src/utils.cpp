@@ -14,7 +14,24 @@ SDL_Color ArrayToColor(int *RGBA)
         (Uint8)RGBA[0],
         (Uint8)RGBA[1],
         (Uint8)RGBA[2],
-        (Uint8)RGBA[3]
-    };
-    return color; 
+        (Uint8)RGBA[3]};
+    return color;
 }
+
+SDL_FRect GetNormalRect(Vector2 origin, Vector2 destination)
+{
+    float ox = origin.x < destination.x ? origin.x : destination.x;
+    float oy = origin.y < destination.y ? origin.y : destination.y;
+    float dx = origin.x > destination.x ? origin.x : destination.x;
+    float dy = origin.y > destination.y ? origin.y : destination.y;
+
+    return {ox, oy, dx - ox, dy - oy};
+}
+
+bool RectContains(SDL_FRect container, SDL_FRect contained)
+{
+    return container.x < contained.x &&
+           container.y < contained.y &&
+           container.x + container.w > contained.x + contained.w &&
+           container.y + container.h > contained.y + contained.h;
+};

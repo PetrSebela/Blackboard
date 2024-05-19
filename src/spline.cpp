@@ -3,11 +3,33 @@
 #include <algorithm>
 #include "canvas.hpp"
 #include "utils.hpp"
+#include "debug.hpp"
 
 void Spline::AddPoint(Vector2 point)
 {
-    if (this->points.size() == 0 || this->points[this->points.size() - 1] != point)
-        this->points.push_back(point);
+    if (this->points.size() != 0 && this->points[this->points.size() - 1] == point)
+        return;
+
+    this->points.push_back(point);
+    if (this->points.size() == 1)
+    {
+        this->bb_origin = point;
+        this->bb_destination = point;
+        return;
+    }
+
+    // doesnt account for line thickness, but should be solvable with some vector math
+    if (point.x < this->bb_origin.x)
+        bb_origin.x = point.x;
+
+    if (point.y > this->bb_origin.y)
+        bb_origin.y = point.y;
+
+    if (point.x > this->bb_destination.x)
+        bb_destination.x = point.x;
+
+    if (point.y < this->bb_destination.y)
+        bb_destination.y = point.y;
 }
 
 void Spline::Render(Canvas *canvas)
@@ -75,6 +97,30 @@ void Spline::Render(Canvas *canvas)
         for (int offset : vertex_offsets)
             triangles.push_back(vertex_count - offset - 1);
         vertex_count += 2;
+    }
+
+
+    // debug render of bounding box
+    Vector2 bb_origin = canvas->WorldToScreen(this->bb_origin);
+    Vector2 bb_destination = canvas->WorldToScreen(this->bb_destination);
+    SDL_FRect bounding_box = GetNormalRect(bb_origin, bb_destination);
+
+    if (DRAW_DEBUG)
+    {
+        if (this->selected)
+        {
+            SDL_SetRenderDrawColor(canvas->renderer, 10, 255, 10, 5);
+            SDL_RenderFillRectF(canvas->renderer, &bounding_box);
+            SDL_SetRenderDrawColor(canvas->renderer, 10, 255, 10, SDL_ALPHA_OPAQUE);
+            SDL_RenderDrawRectF(canvas->renderer, &bounding_box);
+        }
+        else
+        {
+            SDL_SetRenderDrawColor(canvas->renderer, 255, 10, 10, 5);
+            SDL_RenderFillRectF(canvas->renderer, &bounding_box);
+            SDL_SetRenderDrawColor(canvas->renderer, 255, 10, 10, SDL_ALPHA_OPAQUE);
+            SDL_RenderDrawRectF(canvas->renderer, &bounding_box);
+        }
     }
 
     SDL_RenderGeometry(canvas->renderer, nullptr, vertices.data(), vertices.size(), triangles.data(), triangles.size());

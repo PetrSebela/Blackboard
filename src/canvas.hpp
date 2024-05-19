@@ -16,6 +16,10 @@ public:
 
     std::vector<Spline> splines;
 
+    bool render_select_box = false;
+    Vector2 selectbox_origin;
+    Vector2 selectbox_destination;
+
     Canvas(SDL_Renderer *renderer);
     Canvas();
     ~Canvas();
@@ -36,6 +40,8 @@ public:
      * Renderes all objects on canvas to screen
      */
     void Render();
+
+    void PerformSelection();
 };
 
 #endif

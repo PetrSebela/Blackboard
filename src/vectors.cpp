@@ -58,6 +58,7 @@ Vector2 Vector2::Reversed(){
 
 
 bool Vector2::operator!=(const Vector2 &other) { return this->x != other.x || this->y != other.y; }
+bool Vector2::operator==(const Vector2 &other) { return this->x == other.x && this->y == other.y; }
 
 void Vector2::operator+=(const Vector2 &other)
 {

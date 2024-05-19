@@ -2,6 +2,7 @@
 #define UTILS_H
 
 #include <SDL2/SDL.h>
+#include "vectors.hpp"
 
 /**
  * Clamps RGBA value between 0 - 1 
@@ -15,5 +16,10 @@ void DenormalizeRGBA(float *RGBA, int *output);
  * @param RGBA source array of 4 int in range from 0 to 255 
  */
 SDL_Color ArrayToColor(int *RGBA);
+
+
+SDL_FRect GetNormalRect(Vector2 origin, Vector2 destination);
+
+bool RectContains(SDL_FRect container, SDL_FRect contained);
 
 #endif

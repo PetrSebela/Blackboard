@@ -85,6 +85,7 @@ void InitSDL()
 
     Uint32 render_flags = SDL_RENDERER_ACCELERATED;
     renderer = SDL_CreateRenderer(window, -1, render_flags);
+    SDL_SetRenderDrawBlendMode(renderer, SDL_BLENDMODE_BLEND);
 }
 
 void InitImGui()
@@ -171,7 +172,7 @@ void HandleInputs()
 
     SDL_Event event;
 
-    // ! need to do something about this because it is ugly af
+    // ! this looks ugly af, need to do something about it
     while (SDL_PollEvent(&event))
     {
         if (event.type != SDL_MOUSEWHEEL) // imgui lags when using infinite scroll wheel and is stuck processing so many scrollwheen inputs, so i just block it
@@ -201,31 +202,29 @@ void HandleInputs()
         switch (event.type)
         {
         case SDL_KEYDOWN:   // UNDO
-            if (event.key.keysym.sym == SDLK_z && event.key.keysym.mod & KMOD_LCTRL)
-            {
-                printf("Undo\n");
-                if (canvas.splines.size() == 0)
-                    break;
-
-                canvas.splines.pop_back();
-            }
-            break;
-        case SDL_MOUSEBUTTONDOWN:   // Panning setup
-            if (imgui_io->WantCaptureMouse)
+            if (event.key.keysym.sym != SDLK_z || !(event.key.keysym.mod & KMOD_LCTRL) || canvas.splines.size() == 0)
                 break;
 
-            else if (event.button.button == 2)
-                pan_start = Vector2(event.motion.x, event.motion.y);
-
+            canvas.splines.pop_back();
             break;
 
-        case SDL_MOUSEWHEEL:    // canvas zoom
+        // Panning setup
+        case SDL_MOUSEBUTTONDOWN:   
+            // if (imgui_io->WantCaptureMouse || mouse_buttons != 2)
+            //     break;
+            // printf("pan start\n");
+            pan_start = mouse_position;
+            break;
+        
+        // canvas zoom
+        case SDL_MOUSEWHEEL:    
             canvas.scale *= 1 + 0.01 * event.wheel.y;
             canvas.scale = SDL_clamp(canvas.scale, min_canvas_scale, max_canvas_scale);
             canvas.offset += original_mouse - canvas.ScreenToWorld(mouse_position);
             break;
 
-        case SDL_MOUSEMOTION:   // panning
+        // panning
+        case SDL_MOUSEMOTION:   
             if (imgui_io->WantCaptureMouse || mouse_buttons != 2)
                 break;
 
@@ -243,11 +242,8 @@ void Render()
 {
     SDL_SetRenderDrawColor(renderer, canvas_color[0], canvas_color[1], canvas_color[2], canvas_color[3]);
     SDL_RenderClear(renderer);  // Clearing screen
-
     canvas.Render(); // rendering canvas
-
     ImGui_ImplSDLRenderer2_RenderDrawData(ImGui::GetDrawData()); // imgui render
-
     SDL_RenderPresent(renderer);
     SDL_Delay(1000 / 60);
 }

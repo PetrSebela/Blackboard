@@ -12,8 +12,10 @@ IMGUI_PATH := include/imgui
 IMGUI_FILES := $(wildcard $(IMGUI_PATH)/*.cpp)
 IMGUI_OBJ_FILES := $(patsubst $(IMGUI_PATH)/%.cpp, $(BUILD_DIR)/imgui/%.o, $(IMGUI_FILES))
 
+CPPFLAGS += -DDEBUG_BUILD
+
 default: $(OBJ_FILES) imgui
-	clang++ -o blackboard $(SRC_FILES) $(IMGUI_OBJ_FILES) $(INCLUDES) $(LIBS) -Wall
+	clang++ $(CPPFLAGS) -o blackboard $(SRC_FILES) $(IMGUI_OBJ_FILES) $(INCLUDES) $(LIBS) -Wall
 
 imgui: $(IMGUI_OBJ_FILES)
 	echo "imgui build"

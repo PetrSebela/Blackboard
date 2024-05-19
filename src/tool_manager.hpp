@@ -14,6 +14,7 @@ private:
     Canvas *canvas;
     void BrushTool(SDL_Event event);
     bool CannotDraw(int mouse_buttons);
+    void SelectTool(SDL_Event event);
 
 public:
     float brush_size = 1;
