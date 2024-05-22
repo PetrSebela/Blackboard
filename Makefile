@@ -18,7 +18,6 @@ default: $(OBJ_FILES) imgui
 	clang++ $(CPPFLAGS) -o blackboard $(SRC_FILES) $(IMGUI_OBJ_FILES) $(INCLUDES) $(LIBS) -Wall
 
 imgui: $(IMGUI_OBJ_FILES)
-	echo "imgui build"
 
 $(BUILD_DIR)/imgui/%.o: $(IMGUI_PATH)/%.cpp
 	clang++ $(CPPFLAGS) $(CXXFLAGS) -c -o $@ $< $(INCLUDES) $(LIBS) -Wall

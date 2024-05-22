@@ -5,8 +5,10 @@
 #include "vectors.hpp"
 #include <vector>
 #include "spline.hpp"
+#include "image.hpp"
 
 class Spline;
+class Image;
 class Canvas
 {
 public:
@@ -14,7 +16,9 @@ public:
     float scale = 1;
     SDL_Renderer *renderer;
 
+    // objects
     std::vector<Spline> splines;
+    std::vector<Image> images;
 
     bool render_select_box = false;
     Vector2 selectbox_origin;
@@ -36,12 +40,16 @@ public:
      */
     Vector2 ScreenToWorld(Vector2 screen);
 
+    SDL_FRect ScreenRectToWorldRect(SDL_FRect screen);
+    SDL_FRect WorldRectToScreenRect(SDL_FRect world);
+
      /**
      * Renderes all objects on canvas to screen
      */
     void Render();
 
     void PerformSelection();
+
 };
 
 #endif

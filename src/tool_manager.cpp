@@ -1,5 +1,9 @@
 #include "tool_manager.hpp"
 #include "canvas.hpp"
+#include "input_manager.hpp"
+#include <SDL2/SDL_image.h>
+#include "image.hpp"
+#include <boost/algorithm/string.hpp>
 
 ToolManager::ToolManager(Canvas *canvas)
 {
@@ -25,6 +29,15 @@ bool *ToolManager::GetToolboxStates()
 
 void ToolManager::ExecuteTool(SDL_Event event)
 {
+    // rework input management, the way sdl hndeles it is terrible
+    if (event.type != SDL_MOUSEMOTION && event.type != SDL_MOUSEBUTTONDOWN && event.type != SDL_MOUSEBUTTONUP)
+        return;      
+
+    int keys = SDL_GetMouseState(&this->mouse_x, &this->mouse_y);
+    this->mouse_position = Vector2(this->mouse_x, this->mouse_y);
+    this->key_event = GetMouseButtonEvent(0, last_mouse_buttons, keys);
+    this->last_mouse_buttons = keys;
+
     switch (this->active_tool)
     {
     case ToolType::Brush:
@@ -40,63 +53,29 @@ void ToolManager::ExecuteTool(SDL_Event event)
 
 void ToolManager::BrushTool(SDL_Event event)
 {
-    // get mouse position
-    int mouse_x, mouse_y;
-    int mouse_buttons = SDL_GetMouseState(&mouse_x, &mouse_y);
-    Vector2 mouse_position(mouse_x, mouse_y);
-
-    switch (event.type)
+    if (key_event == KeyEvent::PRESSED)
     {
-    case SDL_MOUSEBUTTONDOWN:
-        if (mouse_buttons != 1)
-            break;
-        printf("Starting new spline\n");
-        this->canvas->splines.push_back(Spline());
-        this->canvas->splines.back().color = brush_color;
-        this->canvas->splines.back().thickness = brush_size;
-        break;
-
-    case SDL_MOUSEBUTTONUP:
-        if (this->canvas->splines.size() == 0 || this->canvas->splines.back().finished)
-            break;
-        printf("Ending spline\n");
-        this->canvas->splines.back().finished = true;
-        break;
-
-    case SDL_MOUSEMOTION:
-        if (this->CannotDraw(mouse_buttons))
-            break;
-        this->canvas->splines.back().AddPoint(this->canvas->ScreenToWorld(mouse_position));
-        break;
-
-    default:
-        break;
+        Spline s;
+        s.color = brush_color;
+        s.thickness = brush_size;
+        this->canvas->splines.push_back(s);
     }
-};
 
-bool ToolManager::CannotDraw(int mouse_buttons)
-{
-    return mouse_buttons != 1 ||
-           this->canvas->splines.size() == 0 ||
-           this->canvas->splines.back().finished;
-}
+    else if (key_event == KeyEvent::RELEASED && canvas->splines.size() != 0)
+        this->canvas->splines.back().finished = true;
+
+    else if (key_event == KeyEvent::DOWN && this->canvas->splines.size() != 0 && !this->canvas->splines.back().finished)
+        this->canvas->splines.back().AddPoint(this->canvas->ScreenToWorld(mouse_position));
+};
 
 // --- Select tool ---
 
 void ToolManager::SelectTool(SDL_Event event)
-{
-    int mouse_x, mouse_y;
-    int mouse_buttons = SDL_GetMouseState(&mouse_x, &mouse_y);
-    Vector2 mouse_position(mouse_x, mouse_y);
-
-
-    // if (mouse_buttons != 1)
-    //     return;
-
-    if (event.type == SDL_MOUSEBUTTONUP && event.button.button == 1)
+{   
+    if (key_event == KeyEvent::RELEASED)
         canvas->render_select_box = false;
 
-    else if (event.type == SDL_MOUSEBUTTONDOWN && event.button.button == 1)
+    else if (key_event == KeyEvent::PRESSED)
     {
         canvas->selectbox_origin = canvas->ScreenToWorld(mouse_position);
         canvas->selectbox_destination = canvas->ScreenToWorld(mouse_position);
@@ -104,11 +83,26 @@ void ToolManager::SelectTool(SDL_Event event)
         canvas->PerformSelection();
     }
 
-    else if (event.type == SDL_MOUSEMOTION && event.button.button == 1)
+    else if (key_event == KeyEvent::DOWN)
     {
         canvas->selectbox_destination = canvas->ScreenToWorld(mouse_position);
         canvas->PerformSelection();
     }
-
-    return;
 }
+
+void ToolManager::InsertImage(std::string image_path)
+{
+    boost::trim(image_path);
+    fprintf(stdout, "Loading image : %s\n", image_path.c_str());
+    SDL_Surface *image = IMG_Load(image_path.c_str());
+    
+    if (!image)
+    {
+        fprintf(stderr, "Error occured while loading a image\n");
+        return;
+    }  
+
+    Image canvas_image(image, this->canvas);
+    this->canvas->images.push_back(canvas_image);
+}
+    

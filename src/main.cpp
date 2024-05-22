@@ -21,6 +21,7 @@
 #include "main.hpp"
 #include "tool_types.hpp"
 #include "tool_manager.hpp"
+#include "input_manager.hpp"
 
 SDL_Window *window;
 SDL_Renderer *renderer;
@@ -49,6 +50,7 @@ Vector2 pan_start;
 bool app_active = true;
 int screen_w, screen_h;
 
+
 void Init()
 {
     InitSDL();
@@ -57,12 +59,14 @@ void Init()
     SDL_GetMouseState(&last_mouse_x, &last_mouse_y);
     SDL_GetRendererOutputSize(renderer, &screen_w, &screen_h);
 
+
     canvas = Canvas(renderer);
     tool_manager = ToolManager(&canvas);
 
     // converting and setting default brush and canvas colors
     DenormalizeRGBA(brush_color_input, brush_color);
     DenormalizeRGBA(canvas_color_input, canvas_color);
+    printf("Init OK\n");
 }
 
 void InitSDL()
@@ -106,10 +110,32 @@ void QuitApp()
     ImGui::DestroyContext();
 
     // SDL shutdown
+    for (Image s : canvas.images)
+        s.Free();
+            
     SDL_DestroyRenderer(renderer);
     SDL_DestroyWindow(window);
     SDL_QuitSubSystem(SDL_INIT_EVERYTHING);
     SDL_Quit();
+}
+
+std::string SelectFilePath()
+{
+    char buffer[128];
+    std::string result = "";
+    FILE* pipe = popen("zenity --file-selection --file-filter='Image (png, jpg) | *.png *.jpg'", "r");
+    if (!pipe)
+        return result;
+    try {
+        while (fgets(buffer, sizeof buffer, pipe) != NULL) {
+            result += buffer;
+        }
+    } catch (...) {
+        pclose(pipe);
+        return std::string();
+    }
+    pclose(pipe);
+    return result;
 }
 
 void BuildGui()
@@ -125,8 +151,12 @@ void BuildGui()
         if (ImGui::BeginMenu("File"))
         {
             ImGui::Text("this is main menu");
-            if (ImGui::Button("Open file"))                
-                popen("zenity --file-selection", "r"); // probably only works for linux, will port to windows later
+            if (ImGui::Button("Open file"))       
+            {
+                std::string file_path = SelectFilePath();
+                tool_manager.InsertImage(file_path);
+                // fprintf(stdout, "%s\n", file_path.c_str());
+            }
             ImGui::EndMenu();
         }
         ImGui::EndMainMenuBar();
@@ -175,65 +205,44 @@ void HandleInputs()
     // ! this looks ugly af, need to do something about it
     while (SDL_PollEvent(&event))
     {
-        if (event.type != SDL_MOUSEWHEEL) // imgui lags when using infinite scroll wheel and is stuck processing so many scrollwheen inputs, so i just block it
+        if (event.type != SDL_MOUSEWHEEL) // imgui lags when using infinite scroll wheel because it is stuck processing too many events, so this just blocks it
             ImGui_ImplSDL2_ProcessEvent(&event);
 
-        // processing tool inputs
         if (!imgui_io->WantCaptureMouse)
             tool_manager.ExecuteTool(event);
 
-        // app controls, for now just quitting
-        switch (event.type)
-        {
-        case SDL_QUIT:
-            app_active = false;
-            break;
-
-        case SDL_KEYDOWN:
-            if (event.key.keysym.sym == SDLK_ESCAPE)
-                app_active = false;
-            break;
-
-        default:
-            break;
-        }
-
-        // canvas controls
-        switch (event.type)
-        {
-        case SDL_KEYDOWN:   // UNDO
-            if (event.key.keysym.sym != SDLK_z || !(event.key.keysym.mod & KMOD_LCTRL) || canvas.splines.size() == 0)
-                break;
-
-            canvas.splines.pop_back();
-            break;
-
-        // Panning setup
-        case SDL_MOUSEBUTTONDOWN:   
-            // if (imgui_io->WantCaptureMouse || mouse_buttons != 2)
-            //     break;
-            // printf("pan start\n");
-            pan_start = mouse_position;
-            break;
         
-        // canvas zoom
-        case SDL_MOUSEWHEEL:    
+        // again, terrible input management
+        if (event.type == SDL_QUIT || (event.type == SDL_KEYDOWN && event.key.keysym.sym == SDLK_ESCAPE))
+            app_active = false;
+
+        else if (event.type == SDL_KEYDOWN)
+        {
+            if (event.key.keysym.sym == SDLK_z && (event.key.keysym.mod & KMOD_LCTRL) && canvas.splines.size() != 0)
+                canvas.splines.pop_back();
+
+            if (event.key.keysym.sym == SDLK_DELETE)
+            {
+                canvas.splines.erase(std::remove_if(canvas.splines.begin(), canvas.splines.end(), [](Spline s){return s.selected;}),canvas.splines.end());
+                canvas.images.erase(std::remove_if(canvas.images.begin(), canvas.images.end(), [](Image i){return i.selected;}),canvas.images.end());
+            }
+        }
+        
+        else if (event.type == SDL_MOUSEBUTTONDOWN)
+            pan_start = mouse_position;
+
+
+        else if (event.type == SDL_MOUSEWHEEL)
+        {
             canvas.scale *= 1 + 0.01 * event.wheel.y;
             canvas.scale = SDL_clamp(canvas.scale, min_canvas_scale, max_canvas_scale);
             canvas.offset += original_mouse - canvas.ScreenToWorld(mouse_position);
-            break;
+        }
 
-        // panning
-        case SDL_MOUSEMOTION:   
-            if (imgui_io->WantCaptureMouse || mouse_buttons != 2)
-                break;
-
+        else if (event.type == SDL_MOUSEMOTION && mouse_buttons == 2)
+        {
             canvas.offset -= (mouse_position - pan_start) / canvas.scale;
             pan_start = mouse_position;
-            break;
-
-        default:
-            break;
         }
     }
 }

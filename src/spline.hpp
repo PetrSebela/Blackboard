@@ -19,8 +19,6 @@ public:
     SDL_Color color = {255, 255, 255, 255};
     float thickness = 1;
     bool finished = false;
-
-    // debug
     bool selected = false;
 
     // list of all sline points

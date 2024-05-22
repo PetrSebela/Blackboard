@@ -16,6 +16,10 @@ void HandleInputs();
 
 void BuildGui();
 
+std::string SelectFilePath();
+
 int main(int argc, char *argv[]);
+
+
 
 #endif
