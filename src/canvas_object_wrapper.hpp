@@ -6,18 +6,24 @@
 #include "canvas_object_type.hpp"
 
 class Canvas;
+class Image;
+class Spline;
 class CanvasObjectWrapper
 {
 private:
-    Image image;
-    Spline spline;
+    Image *image;
+    Spline *spline;
     CanvasObjectType contained_type;
 
 public:
-    CanvasObjectWrapper(Image image);
-    CanvasObjectWrapper(Spline Spline);
+    CanvasObjectWrapper(Image *image);
+    CanvasObjectWrapper(Spline *spline);
     CanvasObjectWrapper();
     ~CanvasObjectWrapper();
+
+
+    Image *Image();
+    Spline *Spline();
 
     CanvasObjectType GetContainedType();
     void Render(Canvas *canvas);

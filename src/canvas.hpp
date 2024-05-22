@@ -6,9 +6,11 @@
 #include <vector>
 #include "spline.hpp"
 #include "image.hpp"
+#include "canvas_object_wrapper.hpp"
 
 class Spline;
 class Image;
+class CanvasObjectWrapper;
 class Canvas
 {
 public:
@@ -16,9 +18,7 @@ public:
     float scale = 1;
     SDL_Renderer *renderer;
 
-    // objects
-    std::vector<Spline> splines;
-    std::vector<Image> images;
+    std::vector<CanvasObjectWrapper> canvas_objects;
 
     bool render_select_box = false;
     Vector2 selectbox_origin;
@@ -40,14 +40,16 @@ public:
      */
     Vector2 ScreenToWorld(Vector2 screen);
 
+    // Converts rectangle from screen to world coordinates
     SDL_FRect ScreenRectToWorldRect(SDL_FRect screen);
+    
+    // Converts rectangle from world to screen coordinates
     SDL_FRect WorldRectToScreenRect(SDL_FRect world);
 
-     /**
-     * Renderes all objects on canvas to screen
-     */
+    // Renders all objects from `canvas_objects`
     void Render();
 
+    // Performs selection on `canvas_objects` and sets appropriate flags
     void PerformSelection();
 
 };

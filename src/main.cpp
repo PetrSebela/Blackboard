@@ -109,10 +109,7 @@ void QuitApp()
     ImGui_ImplSDL2_Shutdown();
     ImGui::DestroyContext();
 
-    // SDL shutdown
-    for (Image s : canvas.images)
-        s.Free();
-            
+    // SDL shutdown            
     SDL_DestroyRenderer(renderer);
     SDL_DestroyWindow(window);
     SDL_QuitSubSystem(SDL_INIT_EVERYTHING);
@@ -169,8 +166,9 @@ void BuildGui()
         tool_manager.brush_color = ArrayToColor(brush_color);
     }
 
+    Vector2 last_center = canvas.ScreenToWorld(Vector2(screen_w, screen_h) / 2);
     if (ImGui::SliderFloat("Canvas scale", &canvas.scale, min_canvas_scale, max_canvas_scale))
-        canvas.offset += Vector2(screen_w, screen_h) / 2 - canvas.ScreenToWorld(Vector2(screen_w, screen_h) / 2);
+        canvas.offset += last_center - canvas.ScreenToWorld(Vector2(screen_w, screen_h) / 2);
 
     if (ImGui::ColorEdit3("Background color", canvas_color_input))
         DenormalizeRGBA(canvas_color_input, canvas_color);
@@ -218,13 +216,23 @@ void HandleInputs()
 
         else if (event.type == SDL_KEYDOWN)
         {
-            if (event.key.keysym.sym == SDLK_z && (event.key.keysym.mod & KMOD_LCTRL) && canvas.splines.size() != 0)
-                canvas.splines.pop_back();
+            if (event.key.keysym.sym == SDLK_z && (event.key.keysym.mod & KMOD_LCTRL) && canvas.canvas_objects.size() != 0)
+            {
+                CanvasObjectWrapper wrapper = canvas.canvas_objects.back();
+                canvas.canvas_objects.pop_back();
+                //! free wrapper properly
+            }
+                // canvas.splines.pop_back();
 
             if (event.key.keysym.sym == SDLK_DELETE)
             {
-                canvas.splines.erase(std::remove_if(canvas.splines.begin(), canvas.splines.end(), [](Spline s){return s.selected;}),canvas.splines.end());
-                canvas.images.erase(std::remove_if(canvas.images.begin(), canvas.images.end(), [](Image i){return i.selected;}),canvas.images.end());
+                // ! this doesnt free pointers inside wrapper
+                canvas.canvas_objects.erase(std::remove_if(canvas.canvas_objects.begin(), canvas.canvas_objects.end(), [](CanvasObjectWrapper wrapper){return wrapper.IsSelected();}),canvas.canvas_objects.end());
+
+
+
+                // canvas.splines.erase(std::remove_if(canvas.splines.begin(), canvas.splines.end(), [](Spline s){return s.selected;}),canvas.splines.end());
+                // canvas.images.erase(std::remove_if(canvas.images.begin(), canvas.images.end(), [](Image i){return i.selected;}),canvas.images.end());
             }
         }
         

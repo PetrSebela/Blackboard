@@ -55,17 +55,25 @@ void ToolManager::BrushTool(SDL_Event event)
 {
     if (key_event == KeyEvent::PRESSED)
     {
-        Spline s;
-        s.color = brush_color;
-        s.thickness = brush_size;
-        this->canvas->splines.push_back(s);
+        void *memory = malloc(sizeof(Spline));
+        Spline *s = new(memory)Spline;
+        s->color = brush_color;
+        s->thickness = brush_size;
+
+        CanvasObjectWrapper wrapper(s);
+        this->canvas->canvas_objects.push_back(wrapper);
+    }
+    else if (key_event == KeyEvent::RELEASED && canvas->canvas_objects.size() != 0 && canvas->canvas_objects.back().GetContainedType() == CanvasObjectType::SPLINE)
+    {
+        Spline *s = canvas->canvas_objects.back().Spline();
+        s->finished = true;
     }
 
-    else if (key_event == KeyEvent::RELEASED && canvas->splines.size() != 0)
-        this->canvas->splines.back().finished = true;
-
-    else if (key_event == KeyEvent::DOWN && this->canvas->splines.size() != 0 && !this->canvas->splines.back().finished)
-        this->canvas->splines.back().AddPoint(this->canvas->ScreenToWorld(mouse_position));
+    else if (key_event == KeyEvent::DOWN && this->canvas->canvas_objects.size() != 0 && !canvas->canvas_objects.back().Spline()->finished)
+    {
+        Spline *s = canvas->canvas_objects.back().Spline();
+        s->AddPoint(this->canvas->ScreenToWorld(mouse_position));
+    }
 };
 
 // --- Select tool ---
@@ -94,15 +102,18 @@ void ToolManager::InsertImage(std::string image_path)
 {
     boost::trim(image_path);
     fprintf(stdout, "Loading image : %s\n", image_path.c_str());
-    SDL_Surface *image = IMG_Load(image_path.c_str());
+    SDL_Surface *image_surface = IMG_Load(image_path.c_str());
     
-    if (!image)
+    if (!image_surface)
     {
         fprintf(stderr, "Error occured while loading a image\n");
         return;
-    }  
+    }
 
-    Image canvas_image(image, this->canvas);
-    this->canvas->images.push_back(canvas_image);
+    void *memory = malloc(sizeof(Image));
+    Image *image = new(memory)Image(image_surface, canvas);
+
+    CanvasObjectWrapper wrapper(image);
+    this->canvas->canvas_objects.push_back(wrapper);
 }
     

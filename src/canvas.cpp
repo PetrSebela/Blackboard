@@ -21,11 +21,15 @@ Vector2 Canvas::ScreenToWorld(Vector2 screen)
 
 void Canvas::Render()
 {
-    for (Image i : this->images)
-        i.Render(this);
 
-    for (Spline s : this->splines)
-        s.Render(this);
+    for (CanvasObjectWrapper wrapper : this->canvas_objects)
+        wrapper.Render(this);
+
+    // for (Image i : this->images)
+    //     i.Render(this);
+
+    // for (Spline s : this->splines)
+    //     s.Render(this);
 
 
     if (this->render_select_box)
@@ -49,15 +53,12 @@ void Canvas::Render()
 void Canvas::PerformSelection()
 {
     SDL_FRect selectbox = GetNormalRect(this->selectbox_origin, this->selectbox_destination);
-    for (int i = 0; i < this->splines.size(); i++)
+  
+    for (CanvasObjectWrapper wrapper : this->canvas_objects)
     {
-        SDL_FRect tested = GetNormalRect(this->splines[i].bb_origin, this->splines[i].bb_destination);
-        this->splines[i].selected = RectContains(selectbox, tested);
-    }
-
-    for (int i = 0; i < this->images.size(); i++)
-    {
-        this->images[i].selected = RectContains(selectbox, this->images[i].destination);
+        SDL_FRect tested = wrapper.GetBoundingBox();
+        bool isContained = RectContains(selectbox, tested);
+        wrapper.SetSelected(isContained);
     }
 }
 
