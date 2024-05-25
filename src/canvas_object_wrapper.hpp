@@ -27,9 +27,11 @@ public:
 
     CanvasObjectType GetContainedType();
     void Render(Canvas *canvas);
+    void RenderSelection(Canvas *canvas);
     SDL_FRect GetBoundingBox();
     void SetSelected(bool selected);
     bool IsSelected();
+    bool IntersectsRect(SDL_FRect rect);
 };
 
 #endif

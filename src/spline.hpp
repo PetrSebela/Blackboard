@@ -43,6 +43,10 @@ public:
      * @param scale canvas scale (zoom)
      */
     void Render(Canvas *canvas);
+
+    void RenderSelection(Canvas *canvas);
+
+    bool IntersectsRect(SDL_FRect rect);
 };
 
 #endif

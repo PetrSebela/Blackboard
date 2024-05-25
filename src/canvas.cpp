@@ -21,44 +21,20 @@ Vector2 Canvas::ScreenToWorld(Vector2 screen)
 
 void Canvas::Render()
 {
-
     for (CanvasObjectWrapper wrapper : this->canvas_objects)
+    {
+        if (wrapper.IsSelected())
+            wrapper.RenderSelection(this);
         wrapper.Render(this);
-
-    // for (Image i : this->images)
-    //     i.Render(this);
-
-    // for (Spline s : this->splines)
-    //     s.Render(this);
-
+    }
 
     if (this->render_select_box)
     {
-        Vector2 origin = WorldToScreen(this->selectbox_origin);
-        Vector2 destination = WorldToScreen(this->selectbox_destination);
-
-        SDL_FRect screen_select_box = {
-            origin.x,
-            origin.y,
-            destination.x - origin.x,
-            destination.y - origin.y};
-
-        SDL_SetRenderDrawColor(this->renderer, 0, 255, 255, 2);
-        SDL_RenderFillRectF(renderer, &screen_select_box);
-        SDL_SetRenderDrawColor(this->renderer, 0, 255, 255, SDL_ALPHA_OPAQUE);
-        SDL_RenderDrawRectF(renderer, &screen_select_box);
-    }
-}
-
-void Canvas::PerformSelection()
-{
-    SDL_FRect selectbox = GetNormalRect(this->selectbox_origin, this->selectbox_destination);
-  
-    for (CanvasObjectWrapper wrapper : this->canvas_objects)
-    {
-        SDL_FRect tested = wrapper.GetBoundingBox();
-        bool isContained = RectContains(selectbox, tested);
-        wrapper.SetSelected(isContained);
+        SDL_FRect screen_rect = WorldRectToScreenRect(this->selection_box);
+        SDL_SetRenderDrawColor(this->renderer, 0, 155, 255, 5);
+        SDL_RenderFillRectF(renderer, &screen_rect);
+        SDL_SetRenderDrawColor(this->renderer, 0, 155, 255, SDL_ALPHA_OPAQUE);
+        SDL_RenderDrawRectF(renderer, &screen_rect);
     }
 }
 
@@ -84,4 +60,32 @@ SDL_FRect Canvas::WorldRectToScreenRect(SDL_FRect world)
         origin.y,
         destination.x - origin.x,
         destination.y - origin.y};
+}
+
+// --- Selection ---
+
+void Canvas::AddToSelection(SDL_FRect select_area)
+{
+    this->selection_box = select_area;
+
+    for (CanvasObjectWrapper wrapper : this->canvas_objects)
+    {
+        bool intersects = wrapper.IntersectsRect(selection_box);
+        if (intersects)
+            wrapper.SetSelected(true);
+    }
+}
+
+void Canvas::ResetSelection()
+{
+    for (CanvasObjectWrapper wrapper : this->canvas_objects)
+        wrapper.SetSelected(false);
+}
+
+bool Canvas::IsOverObject(Vector2 point)
+{
+    for (CanvasObjectWrapper wrapper : this->canvas_objects)
+        if (PointInRect(wrapper.GetBoundingBox(), point))
+            return true;
+    return false;
 }

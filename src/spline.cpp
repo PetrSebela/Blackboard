@@ -99,31 +99,19 @@ void Spline::Render(Canvas *canvas)
         vertex_count += 2;
     }
 
+    SDL_RenderGeometry(canvas->renderer, nullptr, vertices.data(), vertices.size(), triangles.data(), triangles.size());
+}
 
-    // debug render of bounding box
+void Spline::RenderSelection(Canvas *canvas)
+{
     Vector2 bb_origin = canvas->WorldToScreen(this->bb_origin);
     Vector2 bb_destination = canvas->WorldToScreen(this->bb_destination);
     SDL_FRect bounding_box = GetNormalRect(bb_origin, bb_destination);
 
-    if (DRAW_DEBUG)
-    {
-        if (this->selected)
-        {
-            SDL_SetRenderDrawColor(canvas->renderer, 10, 255, 10, 5);
-            SDL_RenderFillRectF(canvas->renderer, &bounding_box);
-            SDL_SetRenderDrawColor(canvas->renderer, 10, 255, 10, SDL_ALPHA_OPAQUE);
-            SDL_RenderDrawRectF(canvas->renderer, &bounding_box);
-        }
-        else
-        {
-            SDL_SetRenderDrawColor(canvas->renderer, 255, 10, 10, 5);
-            SDL_RenderFillRectF(canvas->renderer, &bounding_box);
-            SDL_SetRenderDrawColor(canvas->renderer, 255, 10, 10, SDL_ALPHA_OPAQUE);
-            SDL_RenderDrawRectF(canvas->renderer, &bounding_box);
-        }
-    }
-
-    SDL_RenderGeometry(canvas->renderer, nullptr, vertices.data(), vertices.size(), triangles.data(), triangles.size());
+    SDL_SetRenderDrawColor(canvas->renderer, 0, 255, 255, 5);
+    SDL_RenderFillRectF(canvas->renderer, &bounding_box);
+    SDL_SetRenderDrawColor(canvas->renderer, 0, 255, 255, SDL_ALPHA_OPAQUE);
+    SDL_RenderDrawRectF(canvas->renderer, &bounding_box);
 }
 
 void Spline::SetColor(int *colors_rgba)
@@ -135,4 +123,12 @@ void Spline::SetColor(int *colors_rgba)
         (Uint8)std::clamp((int)(colors_rgba[3]), 0, 255),
     };
     this->color = color;
+}
+
+bool Spline::IntersectsRect(SDL_FRect rect)
+{
+    for (Vector2 point : this->points)
+        if (PointInRect(rect, point))
+            return true;
+    return false;
 }

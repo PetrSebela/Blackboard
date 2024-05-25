@@ -44,6 +44,19 @@ void CanvasObjectWrapper::Render(Canvas *canvas)
     }
 }
 
+void CanvasObjectWrapper::RenderSelection(Canvas *canvas)
+{
+    switch (this->contained_type)
+    {
+    case CanvasObjectType::IMAGE:
+        return this->image->RenderSelection(canvas);
+    case CanvasObjectType::SPLINE:
+        return this->spline->RenderSelection(canvas);
+    default:
+        return;
+    }
+}
+
 SDL_FRect CanvasObjectWrapper::GetBoundingBox()
 {
     switch (this->contained_type)
@@ -84,3 +97,17 @@ bool CanvasObjectWrapper::IsSelected()
         return false;
     }
 }
+
+bool CanvasObjectWrapper::IntersectsRect(SDL_FRect rect)
+{
+    switch (this->contained_type)
+    {
+    case CanvasObjectType::IMAGE:
+        return this->image->IntersectsRect(rect);
+    case CanvasObjectType::SPLINE:
+        return this->spline->IntersectsRect(rect);
+    default:
+        return false;
+    }
+}
+

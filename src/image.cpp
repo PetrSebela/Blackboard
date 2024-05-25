@@ -1,5 +1,6 @@
 #include "image.hpp"
 #include "debug.hpp"
+#include "utils.hpp"
 
 Image::Image(SDL_Surface *image, Canvas *canvas)
 {
@@ -32,24 +33,29 @@ Image::~Image(){}
 
 void Image::Render(Canvas *canvas)
 {
-    SDL_FRect screen_rect = canvas->WorldRectToScreenRect(this->destination);
- 
-    if (selected && DRAW_DEBUG)
-    {
-        SDL_FRect debug_rect = {
-            screen_rect.x - 1,
-            screen_rect.y - 1,
-            screen_rect.w + 2,
-            screen_rect.h + 2,
-        };
-        SDL_SetRenderDrawColor(canvas->renderer, 10, 255, 10, SDL_ALPHA_OPAQUE);
-        SDL_RenderDrawRectF(canvas->renderer, &debug_rect);
-    }
-    
+    SDL_FRect screen_rect = canvas->WorldRectToScreenRect(this->destination);   
     SDL_RenderCopyF(canvas->renderer, this->texture, NULL, &screen_rect);
+}
+
+void Image::RenderSelection(Canvas *canvas)
+{
+    SDL_FRect screen_rect = canvas->WorldRectToScreenRect(this->destination);
+    SDL_FRect debug_rect = {
+        screen_rect.x - 1,
+        screen_rect.y - 1,
+        screen_rect.w + 2,
+        screen_rect.h + 2,
+    };
+    SDL_SetRenderDrawColor(canvas->renderer, 0, 255, 255, SDL_ALPHA_OPAQUE);
+    SDL_RenderDrawRectF(canvas->renderer, &debug_rect);
 }
 
 void Image::Free()
 {
     SDL_FreeSurface(this->image);
+}
+
+bool Image::IntersectsRect(SDL_FRect rect)
+{
+    return RectIntersection(rect, this->destination);
 }

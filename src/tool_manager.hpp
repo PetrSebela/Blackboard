@@ -17,8 +17,11 @@ private:
     Canvas *canvas;
 
     int mouse_x, mouse_y;
-    Vector2 mouse_position;
+    Vector2 mouse_screen_position;
     KeyEvent key_event;
+
+    Vector2 selectbox_origin;
+    Vector2 selectbox_destination;
 
     void BrushTool(SDL_Event event);
     void SelectTool(SDL_Event event);

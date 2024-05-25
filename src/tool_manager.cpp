@@ -4,6 +4,7 @@
 #include <SDL2/SDL_image.h>
 #include "image.hpp"
 #include <boost/algorithm/string.hpp>
+#include "utils.hpp"
 
 ToolManager::ToolManager(Canvas *canvas)
 {
@@ -34,7 +35,7 @@ void ToolManager::ExecuteTool(SDL_Event event)
         return;      
 
     int keys = SDL_GetMouseState(&this->mouse_x, &this->mouse_y);
-    this->mouse_position = Vector2(this->mouse_x, this->mouse_y);
+    this->mouse_screen_position = Vector2(this->mouse_x, this->mouse_y);
     this->key_event = GetMouseButtonEvent(0, last_mouse_buttons, keys);
     this->last_mouse_buttons = keys;
 
@@ -72,7 +73,7 @@ void ToolManager::BrushTool(SDL_Event event)
     else if (key_event == KeyEvent::DOWN && this->canvas->canvas_objects.size() != 0 && !canvas->canvas_objects.back().Spline()->finished)
     {
         Spline *s = canvas->canvas_objects.back().Spline();
-        s->AddPoint(this->canvas->ScreenToWorld(mouse_position));
+        s->AddPoint(this->canvas->ScreenToWorld(mouse_screen_position));
     }
 };
 
@@ -80,21 +81,36 @@ void ToolManager::BrushTool(SDL_Event event)
 
 void ToolManager::SelectTool(SDL_Event event)
 {   
+    Vector2 world_position = canvas->ScreenToWorld(mouse_screen_position);
+
+    if (canvas->IsOverObject(world_position))
+        SDL_SetCursor(SDL_CreateSystemCursor(SDL_SYSTEM_CURSOR_HAND));
+    else
+        SDL_SetCursor(SDL_CreateSystemCursor(SDL_SYSTEM_CURSOR_ARROW));
+
     if (key_event == KeyEvent::RELEASED)
         canvas->render_select_box = false;
 
     else if (key_event == KeyEvent::PRESSED)
     {
-        canvas->selectbox_origin = canvas->ScreenToWorld(mouse_position);
-        canvas->selectbox_destination = canvas->ScreenToWorld(mouse_position);
+        canvas->ResetSelection();
+
+        this->selectbox_origin = canvas->ScreenToWorld(mouse_screen_position);
+        this->selectbox_destination = canvas->ScreenToWorld(mouse_screen_position);
+        
         canvas->render_select_box = true;
-        canvas->PerformSelection();
+        
+        SDL_FRect rect = GetNormalRect(this->selectbox_origin, this->selectbox_destination);
+        canvas->AddToSelection(rect);
+
     }
 
     else if (key_event == KeyEvent::DOWN)
-    {
-        canvas->selectbox_destination = canvas->ScreenToWorld(mouse_position);
-        canvas->PerformSelection();
+    {       
+        canvas->ResetSelection();
+        this->selectbox_destination = canvas->ScreenToWorld(mouse_screen_position);
+        SDL_FRect rect = GetNormalRect(this->selectbox_origin, this->selectbox_destination);
+        canvas->AddToSelection(rect);
     }
 }
 

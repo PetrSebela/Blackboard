@@ -199,7 +199,6 @@ void HandleInputs()
     Vector2 original_mouse = canvas.ScreenToWorld(mouse_position);
 
     SDL_Event event;
-
     // ! this looks ugly af, need to do something about it
     while (SDL_PollEvent(&event))
     {
@@ -211,6 +210,7 @@ void HandleInputs()
 
         
         // again, terrible input management
+        
         if (event.type == SDL_QUIT || (event.type == SDL_KEYDOWN && event.key.keysym.sym == SDLK_ESCAPE))
             app_active = false;
 
@@ -222,17 +222,11 @@ void HandleInputs()
                 canvas.canvas_objects.pop_back();
                 //! free wrapper properly
             }
-                // canvas.splines.pop_back();
 
             if (event.key.keysym.sym == SDLK_DELETE)
             {
                 // ! this doesnt free pointers inside wrapper
                 canvas.canvas_objects.erase(std::remove_if(canvas.canvas_objects.begin(), canvas.canvas_objects.end(), [](CanvasObjectWrapper wrapper){return wrapper.IsSelected();}),canvas.canvas_objects.end());
-
-
-
-                // canvas.splines.erase(std::remove_if(canvas.splines.begin(), canvas.splines.end(), [](Spline s){return s.selected;}),canvas.splines.end());
-                // canvas.images.erase(std::remove_if(canvas.images.begin(), canvas.images.end(), [](Image i){return i.selected;}),canvas.images.end());
             }
         }
         

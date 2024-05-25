@@ -20,6 +20,6 @@ SDL_Color ArrayToColor(int *RGBA);
 
 SDL_FRect GetNormalRect(Vector2 origin, Vector2 destination);
 
-bool RectContains(SDL_FRect container, SDL_FRect contained);
-
+bool RectIntersection(SDL_FRect a, SDL_FRect b);
+bool PointInRect(SDL_FRect container, Vector2 point);
 #endif

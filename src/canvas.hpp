@@ -13,6 +13,9 @@ class Image;
 class CanvasObjectWrapper;
 class Canvas
 {
+private:
+    SDL_FRect selection_box;
+
 public:
     Vector2 offset;
     float scale = 1;
@@ -21,9 +24,6 @@ public:
     std::vector<CanvasObjectWrapper> canvas_objects;
 
     bool render_select_box = false;
-    Vector2 selectbox_origin;
-    Vector2 selectbox_destination;
-
     Canvas(SDL_Renderer *renderer);
     Canvas();
     ~Canvas();
@@ -50,8 +50,12 @@ public:
     void Render();
 
     // Performs selection on `canvas_objects` and sets appropriate flags
-    void PerformSelection();
+    
+    void AddToSelection(SDL_FRect select_area);
+    
+    void ResetSelection();
 
+    bool IsOverObject(Vector2 point);    
 };
 
 #endif

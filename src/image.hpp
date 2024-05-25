@@ -18,7 +18,9 @@ public:
     Image();
     ~Image();
     void Render(Canvas *canvas);
+    void RenderSelection(Canvas *canvas);
     void Free();
+    bool IntersectsRect(SDL_FRect rect);
 };
 
 #endif

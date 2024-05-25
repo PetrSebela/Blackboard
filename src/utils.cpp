@@ -28,10 +28,18 @@ SDL_FRect GetNormalRect(Vector2 origin, Vector2 destination)
     return {ox, oy, dx - ox, dy - oy};
 }
 
-bool RectContains(SDL_FRect container, SDL_FRect contained)
+bool RectIntersection(SDL_FRect a, SDL_FRect b)
 {
-    return container.x < contained.x &&
-           container.y < contained.y &&
-           container.x + container.w > contained.x + contained.w &&
-           container.y + container.h > contained.y + contained.h;
+    return !(a.x > b.x + b.w ||
+             a.x + a.w < b.x ||
+             a.y > b.y + b.h ||
+             a.y + a.h < b.y);
 };
+
+bool PointInRect(SDL_FRect container, Vector2 point)
+{
+    return point.x >= container.x &&
+           point.x <= container.x + container.w &&
+           point.y >= container.y &&
+           point.y <= container.y + container.h;
+}
