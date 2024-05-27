@@ -93,6 +93,11 @@ Vector2 Vector2::operator*(const float &other)
     return Vector2(this->x * other, this->y * other);
 }
 
+float Vector2::operator*(const Vector2 &other)
+{
+    return this->x * other.x - this->y * other.y;
+}
+
 void Vector2::operator/=(const float &other)
 {
     this->x /= other;

@@ -44,6 +44,8 @@ public:
     void operator *= (const float &other);
     Vector2 operator * (const float &other);
 
+    float operator * (const Vector2 &other);
+
     void operator /= (const float &other);
     Vector2 operator / (const float &other);
 };
